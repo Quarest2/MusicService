@@ -1,0 +1,34 @@
+definitions:
+  controllers.FailureResponse:
+    properties:
+      error:
+        example: invalid input
+        type: string
+    type: object
+  controllers.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: OK
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /ping:
+    get:
+      description: ping server
+      operationId: ping-server
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.FailureResponse'
+      summary: Ping server
+      tags:
+      - api
+swagger: "2.0"

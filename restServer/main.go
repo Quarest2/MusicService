@@ -1,8 +1,8 @@
 package main
 
 import (
-	"MusicService/controllers"
 	"MusicService/docs"
+	"MusicService/restServer/controllers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"

@@ -18,13 +18,12 @@ type Client interface {
 }
 
 type minioClient struct {
-	mc *minio.Client // Клиент Minio
+	mc *minio.Client
 }
 
-// TODO
-//func NewMinioClient() Client {
-//	return &minioClient{}
-//}
+func NewMinioClient() Client {
+	return &minioClient{}
+}
 
 func (m *minioClient) InitMinio() error {
 	var err error

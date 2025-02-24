@@ -2,15 +2,27 @@ package main
 
 import (
 	"MusicService/docs"
+	"MusicService/minioStorage"
 	"MusicService/restServer/controllers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	"log"
 )
 
 func main() {
-	// TODO подключить S3
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error with .env file: %v", err)
+	}
+
+	minioClient := minioStorage.NewMinioClient()
+	err = minioClient.InitMinio()
+	if err != nil {
+		log.Fatalf("Error with initializing Minio: %v", err)
+	}
 
 	r := gin.Default()
 

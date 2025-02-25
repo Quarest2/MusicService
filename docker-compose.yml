@@ -10,10 +10,10 @@ services:
       - "9000:9000"
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
-      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
-      MINIO_USE_SSL: "${MINIO_USE_SSL}"
-      MINIO_DEFAULT_BUCKETS: "${MINIO_BUCKET_NAME}"
+      MINIO_ROOT_USER: "root"
+      MINIO_ROOT_PASSWORD: "minio_password"
+      MINIO_USE_SSL: "false"
+      MINIO_DEFAULT_BUCKETS: "bucket_name"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
@@ -23,20 +23,38 @@ services:
   rest-server:
     build:
       context: ./
-      dockerfile: ./restServer/Dockerfile
+      dockerfile: restServer/Dockerfile
     container_name: restServer
-    volumes:
-      - storage:/data/:ro
     ports:
       - "8081:8080"
     networks:
       - internalNetwork
-      - externalNetwork
     depends_on:
       minio:
         condition: service_started
+      db:
+        condition: service_healthy
+
     #environment:
     restart: always
+
+  db:
+    image: postgres:17-alpine
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: musicService
+    networks:
+      - internalNetwork
+    ports:
+      - "6431:5432"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   minio_data:
@@ -44,5 +62,3 @@ volumes:
 networks:
     internalNetwork:
         driver: bridge
-    externalNetwork:
-        name: fema

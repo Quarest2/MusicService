@@ -1,4 +1,4 @@
-package minioStorage
+package client
 
 import (
 	"bytes"
@@ -6,15 +6,19 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"minioStorage"
+	"minioStorage/config"
 	"sync"
 	"time"
 )
+
+// Контекст используется для передачи сигналов об отмене операции загрузки в случае необходимости.
 
 // CreateOne создает один объект в бакете Minio.
 // Метод принимает структуру fileData, которая содержит имя файла и его данные.
 // В случае успешной загрузки данных в бакет, метод возвращает nil, иначе возвращает ошибку.
 // Все операции выполняются в контексте задачи.
-func (m *minioClient) CreateOne(file FileDataType) (string, error) {
+func (m *minioClient) CreateOne(file minioStorage.FileDataType) (string, error) {
 	// Генерация уникального идентификатора для нового объекта.
 	objectID := uuid.New().String()
 
@@ -22,13 +26,13 @@ func (m *minioClient) CreateOne(file FileDataType) (string, error) {
 	reader := bytes.NewReader(file.Data)
 
 	// Загрузка данных в бакет Minio с использованием контекста для возможности отмены операции.
-	_, err := m.mc.PutObject(context.Background(), AppConfig.BucketName, objectID, reader, int64(len(file.Data)), minio.PutObjectOptions{})
+	_, err := m.mc.PutObject(context.Background(), config.AppConfig.BucketName, objectID, reader, int64(len(file.Data)), minio.PutObjectOptions{})
 	if err != nil {
 		return "", fmt.Errorf("ошибка при создании объекта %s: %v", file.FileName, err)
 	}
 
 	// Получение URL для загруженного объекта
-	url, err := m.mc.PresignedGetObject(context.Background(), AppConfig.BucketName, objectID, time.Second*24*60*60, nil)
+	url, err := m.mc.PresignedGetObject(context.Background(), config.AppConfig.BucketName, objectID, time.Second*24*60*60, nil)
 	if err != nil {
 		return "", fmt.Errorf("ошибка при создании URL для объекта %s: %v", file.FileName, err)
 	}
@@ -39,7 +43,7 @@ func (m *minioClient) CreateOne(file FileDataType) (string, error) {
 // CreateMany создает несколько объектов в хранилище MinIO из переданных данных.
 // Если происходит ошибка при создании объекта, метод возвращает ошибку,
 // указывающую на неудачные объекты.
-func (m *minioClient) CreateMany(data map[string]FileDataType) ([]string, error) {
+func (m *minioClient) CreateMany(data map[string]minioStorage.FileDataType) ([]string, error) {
 	urls := make([]string, 0, len(data)) // Массив для хранения URL-адресов
 
 	ctx, cancel := context.WithCancel(context.Background()) // Создание контекста с возможностью отмены операции.
@@ -53,16 +57,16 @@ func (m *minioClient) CreateMany(data map[string]FileDataType) ([]string, error)
 	// Запуск горутин для создания каждого объекта.
 	for objectID, file := range data {
 		wg.Add(1) // Увеличение счетчика WaitGroup перед запуском каждой горутины.
-		go func(objectID string, file FileDataType) {
-			defer wg.Done()                                                                                                                            // Уменьшение счетчика WaitGroup после завершения горутины.
-			_, err := m.mc.PutObject(ctx, AppConfig.BucketName, objectID, bytes.NewReader(file.Data), int64(len(file.Data)), minio.PutObjectOptions{}) // Создание объекта в бакете MinIO.
+		go func(objectID string, file minioStorage.FileDataType) {
+			defer wg.Done()                                                                                                                                   // Уменьшение счетчика WaitGroup после завершения горутины.
+			_, err := m.mc.PutObject(ctx, config.AppConfig.BucketName, objectID, bytes.NewReader(file.Data), int64(len(file.Data)), minio.PutObjectOptions{}) // Создание объекта в бакете MinIO.
 			if err != nil {
 				cancel() // Отмена операции при возникновении ошибки.
 				return
 			}
 
 			// Получение URL для загруженного объекта
-			url, err := m.mc.PresignedGetObject(ctx, AppConfig.BucketName, objectID, time.Second*24*60*60, nil)
+			url, err := m.mc.PresignedGetObject(ctx, config.AppConfig.BucketName, objectID, time.Second*24*60*60, nil)
 			if err != nil {
 				cancel() // Отмена операции при возникновении ошибки.
 				return
@@ -90,7 +94,7 @@ func (m *minioClient) CreateMany(data map[string]FileDataType) ([]string, error)
 // Он принимает строку `objectID` в качестве параметра и возвращает срез байт данных объекта и ошибку, если такая возникает.
 func (m *minioClient) GetOne(objectID string) (string, error) {
 	// Получение предварительно подписанного URL для доступа к объекту Minio.
-	url, err := m.mc.PresignedGetObject(context.Background(), AppConfig.BucketName, objectID, time.Second*24*60*60, nil)
+	url, err := m.mc.PresignedGetObject(context.Background(), config.AppConfig.BucketName, objectID, time.Second*24*60*60, nil)
 	if err != nil {
 		return "", fmt.Errorf("ошибка при получении URL для объекта %s: %v", objectID, err)
 	}
@@ -151,7 +155,7 @@ func (m *minioClient) GetMany(objectIDs []string) ([]string, error) {
 // DeleteOne удаляет один объект из бакета Minio по его идентификатору.
 func (m *minioClient) DeleteOne(objectID string) error {
 	// Удаление объекта из бакета Minio.
-	err := m.mc.RemoveObject(context.Background(), AppConfig.BucketName, objectID, minio.RemoveObjectOptions{})
+	err := m.mc.RemoveObject(context.Background(), config.AppConfig.BucketName, objectID, minio.RemoveObjectOptions{})
 	if err != nil {
 		return err // Возвращаем ошибку, если не удалось удалить объект.
 	}
@@ -171,8 +175,8 @@ func (m *minioClient) DeleteMany(objectIDs []string) error {
 	for _, objectID := range objectIDs {
 		wg.Add(1) // Увеличение счетчика WaitGroup перед запуском каждой горутины
 		go func(id string) {
-			defer wg.Done()                                                                      // Уменьшение счетчика WaitGroup после завершения горутины
-			err := m.mc.RemoveObject(ctx, AppConfig.BucketName, id, minio.RemoveObjectOptions{}) // Удаление объекта с использованием Minio клиента
+			defer wg.Done()                                                                             // Уменьшение счетчика WaitGroup после завершения горутины
+			err := m.mc.RemoveObject(ctx, config.AppConfig.BucketName, id, minio.RemoveObjectOptions{}) // Удаление объекта с использованием Minio клиента
 			if err != nil {
 				errCh <- OperationError{ObjectID: id, Error: fmt.Errorf("ошибка при удалении объекта %s: %v", id, err)} // Отправка ошибки в канал с ошибками
 				cancel()                                                                                                // Отмена операции при возникновении ошибки

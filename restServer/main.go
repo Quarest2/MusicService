@@ -3,11 +3,8 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-	"log"
-	"minioStorage"
 	"restServer/controllers"
 	"restServer/db"
 	"restServer/docs"
@@ -15,17 +12,6 @@ import (
 
 func init() {
 	db.Connect()
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error with .env file: %v", err)
-	}
-
-	minioClient := minioStorage.NewMinioClient()
-	err = minioClient.InitMinio()
-	if err != nil {
-		log.Fatalf("Error with initializing Minio: %v", err)
-	}
 }
 
 func main() {

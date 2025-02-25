@@ -1,9 +1,11 @@
-package minioStorage
+package config
 
 import (
 	"os"
 	"strconv"
 )
+
+var AppConfig *Config
 
 func LoadConfig() {
 	AppConfig = &Config{

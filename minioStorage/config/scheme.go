@@ -1,7 +1,6 @@
 package config
 
 type Config struct {
-	Port              string
 	MinioEndpoint     string
 	BucketName        string
 	MinioRootUser     string

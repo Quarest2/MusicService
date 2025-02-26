@@ -2,6 +2,9 @@ version: "3"
 
 services:
   minio:
+#    build:
+#      context: ./
+#      dockerfile: minioStorage/Dockerfile
     container_name: minio
     image: 'bitnami/minio:latest'
     volumes:
@@ -13,7 +16,7 @@ services:
       MINIO_ROOT_USER: "root"
       MINIO_ROOT_PASSWORD: "minio_password"
       MINIO_USE_SSL: "false"
-      MINIO_DEFAULT_BUCKETS: "bucket_name"
+      MINIO_DEFAULT_BUCKETS: "default-bucket"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s

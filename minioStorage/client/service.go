@@ -6,19 +6,16 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
-	"minioStorage"
 	"minioStorage/config"
 	"sync"
 	"time"
 )
 
-// Контекст используется для передачи сигналов об отмене операции загрузки в случае необходимости.
-
 // CreateOne создает один объект в бакете Minio.
 // Метод принимает структуру fileData, которая содержит имя файла и его данные.
 // В случае успешной загрузки данных в бакет, метод возвращает nil, иначе возвращает ошибку.
 // Все операции выполняются в контексте задачи.
-func (m *minioClient) CreateOne(file minioStorage.FileDataType) (string, error) {
+func (m *minioClient) CreateOne(file FileDataType) (string, error) {
 	// Генерация уникального идентификатора для нового объекта.
 	objectID := uuid.New().String()
 
@@ -43,7 +40,7 @@ func (m *minioClient) CreateOne(file minioStorage.FileDataType) (string, error) 
 // CreateMany создает несколько объектов в хранилище MinIO из переданных данных.
 // Если происходит ошибка при создании объекта, метод возвращает ошибку,
 // указывающую на неудачные объекты.
-func (m *minioClient) CreateMany(data map[string]minioStorage.FileDataType) ([]string, error) {
+func (m *minioClient) CreateMany(data map[string]FileDataType) ([]string, error) {
 	urls := make([]string, 0, len(data)) // Массив для хранения URL-адресов
 
 	ctx, cancel := context.WithCancel(context.Background()) // Создание контекста с возможностью отмены операции.
@@ -57,7 +54,7 @@ func (m *minioClient) CreateMany(data map[string]minioStorage.FileDataType) ([]s
 	// Запуск горутин для создания каждого объекта.
 	for objectID, file := range data {
 		wg.Add(1) // Увеличение счетчика WaitGroup перед запуском каждой горутины.
-		go func(objectID string, file minioStorage.FileDataType) {
+		go func(objectID string, file FileDataType) {
 			defer wg.Done()                                                                                                                                   // Уменьшение счетчика WaitGroup после завершения горутины.
 			_, err := m.mc.PutObject(ctx, config.AppConfig.BucketName, objectID, bytes.NewReader(file.Data), int64(len(file.Data)), minio.PutObjectOptions{}) // Создание объекта в бакете MinIO.
 			if err != nil {

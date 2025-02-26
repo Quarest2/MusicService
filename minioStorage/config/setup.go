@@ -9,8 +9,6 @@ var AppConfig *Config
 
 func LoadConfig() {
 	AppConfig = &Config{
-		Port: getEnv("PORT", "8080"),
-
 		MinioEndpoint:     getEnv("MINIO_ENDPOINT", "localhost:9000"),
 		BucketName:        getEnv("MINIO_BUCKET_NAME", "defaultBucket"),
 		MinioRootUser:     getEnv("MINIO_ROOT_USER", "root"),

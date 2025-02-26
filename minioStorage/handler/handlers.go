@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"minioStorage"
+	"minioStorage/client"
 	"net/http"
 )
 
@@ -48,7 +48,7 @@ func (h *Handler) CreateOne(c *gin.Context) {
 	}
 
 	// Создаем структуру FileDataType для хранения данных файла
-	fileData := minioStorage.FileDataType{
+	fileData := client.FileDataType{
 		FileName: file.Filename, // Имя файла
 		Data:     fileBytes,     // Содержимое файла в виде байтового среза
 	}
@@ -100,7 +100,7 @@ func (h *Handler) CreateMany(c *gin.Context) {
 	}
 
 	// Создаем map для хранения данных файлов
-	data := make(map[string]minioStorage.FileDataType)
+	data := make(map[string]client.FileDataType)
 
 	// Проходим по каждому файлу в форме
 	for _, file := range files {
@@ -130,7 +130,7 @@ func (h *Handler) CreateMany(c *gin.Context) {
 		}
 
 		// Добавляем данные файла в map
-		data[file.Filename] = minioStorage.FileDataType{
+		data[file.Filename] = client.FileDataType{
 			FileName: file.Filename, // Имя файла
 			Data:     fileBytes,     // Содержимое файла в виде байтового среза
 		}

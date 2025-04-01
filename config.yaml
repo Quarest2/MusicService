@@ -1,0 +1,20 @@
+server:
+  port: "8080"
+
+database:
+  host: "postgres"
+  port: "5432"
+  user: "postgres"
+  password: "postgres"
+  name: "music_db"
+
+minio:
+  endpoint: "minio:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  bucket_name: "music"
+  use_ssl: false
+
+jwt:
+  secret_key: "very_very_very_very_very_very_strong_password"  # минимум 32 символа
+  expiration_hours: 24

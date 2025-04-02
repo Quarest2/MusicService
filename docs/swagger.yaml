@@ -1,0 +1,722 @@
+basePath: /
+definitions:
+  model.AddTrackToPlaylistRequest:
+    properties:
+      trackId:
+        type: integer
+    required:
+    - trackId
+    type: object
+  model.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  model.PlaylistRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  model.PlaylistResponse:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      tracks:
+        items:
+          $ref: '#/definitions/model.TrackResponse'
+        type: array
+    type: object
+  model.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  model.TrackResponse:
+    properties:
+      album:
+        type: string
+      artist:
+        type: string
+      createdAt:
+        type: string
+      duration:
+        type: integer
+      genre:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+  model.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+  response.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@music-service.com
+    name: API Support
+    url: http://example.com/support
+  description: API для сервиса стриминга и селфхостинга музыки
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Music Streaming Service API
+  version: "1.0"
+paths:
+  /api/playlists:
+    get:
+      description: Возвращает все плейлисты текущего пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.PlaylistResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить плейлисты пользователя
+      tags:
+      - Playlists
+    post:
+      consumes:
+      - application/json
+      description: Создает новый плейлист для текущего пользователя
+      parameters:
+      - description: Данные плейлиста
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PlaylistRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.PlaylistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Создать плейлист
+      tags:
+      - Playlists
+  /api/playlists/{id}:
+    delete:
+      description: Удаляет плейлист с указанным ID
+      parameters:
+      - description: ID плейлиста
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Удалить плейлист
+      tags:
+      - Playlists
+    get:
+      description: Возвращает плейлист с указанным ID
+      parameters:
+      - description: ID плейлиста
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PlaylistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить плейлист по ID
+      tags:
+      - Playlists
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о плейлисте
+      parameters:
+      - description: ID плейлиста
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные плейлиста
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PlaylistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PlaylistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Обновить плейлист
+      tags:
+      - Playlists
+  /api/playlists/{id}/tracks:
+    post:
+      consumes:
+      - application/json
+      description: Добавляет трек в указанный плейлист
+      parameters:
+      - description: ID плейлиста
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID трека
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AddTrackToPlaylistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Добавить трек в плейлист
+      tags:
+      - Playlists
+  /api/playlists/{id}/tracks/{trackId}:
+    delete:
+      description: Удаляет трек из указанного плейлиста
+      parameters:
+      - description: ID плейлиста
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID трека
+        in: path
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Удалить трек из плейлиста
+      tags:
+      - Playlists
+  /api/tracks:
+    get:
+      description: Возвращает список всех треков в системе
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TrackResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить все треки
+      tags:
+      - Tracks
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает аудиофайл и создает запись о треке
+      parameters:
+      - description: Аудиофайл
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Название трека
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Исполнитель
+        in: formData
+        name: artist
+        required: true
+        type: string
+      - description: Альбом
+        in: formData
+        name: album
+        type: string
+      - description: Жанр
+        in: formData
+        name: genre
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.TrackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Загрузить новый трек
+      tags:
+      - Tracks
+  /api/tracks/{id}:
+    delete:
+      description: Удаляет трек по ID (только для владельца)
+      parameters:
+      - description: ID трека
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Удалить трек
+      tags:
+      - Tracks
+    get:
+      description: Возвращает информацию о конкретном треке
+      parameters:
+      - description: ID трека
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TrackResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить трек по ID
+      tags:
+      - Tracks
+  /api/tracks/search:
+    get:
+      description: Поиск треков по названию, исполнителю, альбому или жанру
+      parameters:
+      - description: Поисковый запрос
+        in: query
+        name: q
+        type: string
+      - description: Исполнитель
+        in: query
+        name: artist
+        type: string
+      - description: Альбом
+        in: query
+        name: album
+        type: string
+      - description: Жанр
+        in: query
+        name: genre
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TrackResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Поиск треков
+      tags:
+      - Tracks
+  /api/tracks/stream/{id}:
+    get:
+      description: Возвращает аудиопоток для проигрывания трека
+      parameters:
+      - description: ID трека
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - audio/mpeg
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Воспроизвести трек
+      tags:
+      - Tracks
+  /api/user/profile:
+    get:
+      description: Возвращает информацию о текущем авторизованном пользователе
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить профиль пользователя
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о текущем авторизованном пользователе
+      parameters:
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Обновить профиль пользователя
+      tags:
+      - User
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Вход в систему и получение JWT токена
+      parameters:
+      - description: Данные авторизации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Авторизация пользователя
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Регистрация пользователя
+      tags:
+      - Auth
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

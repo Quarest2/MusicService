@@ -11,77 +11,87 @@ import (
 	"MusicService/pkg/response"
 	"log"
 
+	_ "MusicService/docs" // Импорт сгенерированной документации
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title Music Streaming Service API
+// @version 1.0
+// @description API для сервиса стриминга и селфхостинга музыки
+
+// @contact.name API Support
+// @contact.url http://example.com/support
+// @contact.email support@music-service.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
+// @schemes http
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token
 func main() {
-	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Initialize database
 	db, err := config.InitDB(cfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
-	// Initialize MinIO client
 	minioClient, err := storage.NewMinioClient(cfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize MinIO client: %v", err)
 	}
 
-	// Ensure bucket exists
 	err = minioClient.CreateBucket(cfg.MinIO.BucketName)
 	if err != nil {
 		log.Fatalf("Failed to create bucket: %v", err)
 	}
 
-	// Initialize JWT service
 	jwtService := jwt.NewJWTService(cfg.JWT.SecretKey)
-
-	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 	trackRepo := repository.NewTrackRepository(db)
 	playlistRepo := repository.NewPlaylistRepository(db)
 
-	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtService)
 	userService := service.NewUserService(userRepo)
 	trackService := service.NewTrackService(trackRepo, minioClient, cfg.MinIO.BucketName)
 	playlistService := service.NewPlaylistService(playlistRepo, trackRepo)
 
-	// Initialize controllers
 	authController := controller.NewAuthController(authService)
 	userController := controller.NewUserController(userService)
 	trackController := controller.NewTrackController(trackService)
 	playlistController := controller.NewPlaylistController(playlistService)
 
-	// Setup router
 	router := gin.Default()
 	router.Use(response.CORSMiddleware())
 
-	// Auth routes
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	auth := router.Group("/auth")
 	{
 		auth.POST("/register", authController.Register)
 		auth.POST("/login", authController.Login)
 	}
 
-	// Authenticated routes
 	api := router.Group("/api")
 	api.Use(middleware.AuthMiddleware(jwtService))
 	{
-		// User routes
 		user := api.Group("/user")
 		{
 			user.GET("/profile", userController.GetProfile)
 			user.PUT("/profile", userController.UpdateProfile)
 		}
 
-		// Track routes
 		track := api.Group("/tracks")
 		{
 			track.POST("", trackController.UploadTrack)
@@ -92,7 +102,6 @@ func main() {
 			track.GET("/search", trackController.SearchTracks)
 		}
 
-		// Playlist routes
 		playlist := api.Group("/playlists")
 		{
 			playlist.POST("", playlistController.CreatePlaylist)
@@ -105,7 +114,6 @@ func main() {
 		}
 	}
 
-	// Start server
 	log.Printf("Server is running on port %s", cfg.Server.Port)
 	if err := router.Run(":" + cfg.Server.Port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

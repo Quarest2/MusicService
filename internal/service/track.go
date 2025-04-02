@@ -36,37 +36,32 @@ func NewTrackService(trackRepo repository.TrackRepository, minioClient storage.M
 }
 
 func (s *trackService) UploadTrack(file *multipart.FileHeader, req *model.TrackUploadRequest, userID uint) (*model.TrackResponse, error) {
-	// Open the file
 	src, err := file.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer src.Close()
 
-	// Generate unique filename
 	ext := filepath.Ext(file.Filename)
 	newFilename := uuid.New().String() + ext
 
-	// Upload to MinIO
 	_, err = s.minioClient.PutObject(s.bucketName, newFilename, src, file.Size)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create track record in database
-	// Note: In a real application, you'd want to extract duration and other metadata from the audio file
+	// TODO: In a real application, you'd want to extract duration and other metadata from the audio file
 	track := &model.Track{
 		Title:      req.Title,
 		Artist:     req.Artist,
 		Album:      req.Album,
 		Genre:      req.Genre,
-		Duration:   180, // Placeholder - should extract from audio file
+		Duration:   180, // TODO Placeholder - should extract from audio file
 		FilePath:   newFilename,
 		UploadedBy: userID,
 	}
 
 	if err := s.trackRepo.Create(track); err != nil {
-		// Clean up MinIO object if database operation fails
 		_ = s.minioClient.RemoveObject(s.bucketName, newFilename)
 		return nil, err
 	}
@@ -132,7 +127,6 @@ func (s *trackService) StreamTrack(id uint) (io.ReadCloser, string, error) {
 		return nil, "", err
 	}
 
-	// Get content type (simplified - in real app you'd detect from file)
 	contentType := "audio/mpeg"
 
 	return object, contentType, nil
@@ -144,12 +138,10 @@ func (s *trackService) DeleteTrack(id uint) error {
 		return err
 	}
 
-	// Delete from MinIO first
 	if err := s.minioClient.RemoveObject(s.bucketName, track.FilePath); err != nil {
 		return err
 	}
 
-	// Then delete from database
 	return s.trackRepo.Delete(id)
 }
 

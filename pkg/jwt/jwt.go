@@ -12,13 +12,11 @@ var (
 	ErrTokenExpired = errors.New("token has expired")
 )
 
-// JWTService интерфейс для работы с JWT токенами
 type JWTService interface {
 	GenerateToken(userID uint) (string, error)
 	ValidateToken(tokenString string) (*Claims, error)
 }
 
-// Claims структура для хранения данных в JWT токене
 type Claims struct {
 	UserID uint `json:"user_id"`
 	jwt.RegisteredClaims
@@ -28,14 +26,12 @@ type jwtService struct {
 	secretKey []byte
 }
 
-// NewJWTService создает новый экземпляр JWT сервиса
 func NewJWTService(secretKey string) JWTService {
 	return &jwtService{
 		secretKey: []byte(secretKey),
 	}
 }
 
-// GenerateToken генерирует новый JWT токен для пользователя
 func (s *jwtService) GenerateToken(userID uint) (string, error) {
 	claims := &Claims{
 		UserID: userID,
@@ -51,7 +47,6 @@ func (s *jwtService) GenerateToken(userID uint) (string, error) {
 	return token.SignedString(s.secretKey)
 }
 
-// ValidateToken проверяет валидность JWT токена и возвращает claims
 func (s *jwtService) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

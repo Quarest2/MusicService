@@ -11,7 +11,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-// MinIOClient интерфейс для работы с MinIO
 type MinIOClient interface {
 	CreateBucket(bucketName string) error
 	PutObject(bucketName, objectName string, reader io.Reader, objectSize int64) (minio.UploadInfo, error)
@@ -24,9 +23,7 @@ type minioClient struct {
 	client *minio.Client
 }
 
-// NewMinioClient создает новый клиент MinIO
 func NewMinioClient(cfg *config.Config) (MinIOClient, error) {
-	// Инициализация клиента MinIO
 	client, err := minio.New(cfg.MinIO.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.MinIO.AccessKey, cfg.MinIO.SecretKey, ""),
 		Secure: cfg.MinIO.UseSSL,
@@ -38,7 +35,6 @@ func NewMinioClient(cfg *config.Config) (MinIOClient, error) {
 	return &minioClient{client: client}, nil
 }
 
-// CreateBucket создает bucket в MinIO если он не существует
 func (m *minioClient) CreateBucket(bucketName string) error {
 	ctx := context.Background()
 	exists, err := m.client.BucketExists(ctx, bucketName)
@@ -52,7 +48,6 @@ func (m *minioClient) CreateBucket(bucketName string) error {
 			return err
 		}
 
-		// Устанавливаем политику доступа (по умолчанию private)
 		policy := `{
 			"Version": "2012-10-17",
 			"Statement": [
@@ -73,7 +68,6 @@ func (m *minioClient) CreateBucket(bucketName string) error {
 	return nil
 }
 
-// PutObject загружает объект в MinIO
 func (m *minioClient) PutObject(bucketName, objectName string, reader io.Reader, objectSize int64) (minio.UploadInfo, error) {
 	uploadInfo, err := m.client.PutObject(
 		context.Background(),
@@ -88,7 +82,6 @@ func (m *minioClient) PutObject(bucketName, objectName string, reader io.Reader,
 	return uploadInfo, err
 }
 
-// GetObject получает объект из MinIO
 func (m *minioClient) GetObject(bucketName, objectName string) (*minio.Object, error) {
 	object, err := m.client.GetObject(
 		context.Background(),
@@ -99,7 +92,6 @@ func (m *minioClient) GetObject(bucketName, objectName string) (*minio.Object, e
 	return object, err
 }
 
-// RemoveObject удаляет объект из MinIO
 func (m *minioClient) RemoveObject(bucketName, objectName string) error {
 	err := m.client.RemoveObject(
 		context.Background(),
@@ -110,7 +102,6 @@ func (m *minioClient) RemoveObject(bucketName, objectName string) error {
 	return err
 }
 
-// PresignedGetObject генерирует временную ссылку для доступа к объекту
 func (m *minioClient) PresignedGetObject(bucketName, objectName string, expiry time.Duration) (*url.URL, error) {
 	url, err := m.client.PresignedGetObject(
 		context.Background(),

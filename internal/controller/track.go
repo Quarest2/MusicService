@@ -24,17 +24,17 @@ func NewTrackController(trackService service.TrackService) *TrackController {
 // @Tags Tracks
 // @Accept multipart/form-data
 // @Produce json
+// @Security BearerAuth
 // @Param file formData file true "Аудиофайл"
 // @Param title formData string true "Название трека"
 // @Param artist formData string true "Исполнитель"
 // @Param album formData string false "Альбом"
 // @Param genre formData string false "Жанр"
-// @Security ApiKeyAuth
 // @Success 201 {object} model.TrackResponse
 // @Failure 400 {object} response.Response
 // @Failure 401 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /tracks [post]
+// @Router /api/tracks [post]
 func (c *TrackController) UploadTrack(ctx *gin.Context) {
 	userID := ctx.GetUint("userID")
 
@@ -64,9 +64,10 @@ func (c *TrackController) UploadTrack(ctx *gin.Context) {
 // @Description Возвращает список всех треков в системе
 // @Tags Tracks
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {array} model.TrackResponse
 // @Failure 500 {object} response.Response
-// @Router /tracks [get]
+// @Router /api/tracks [get]
 func (c *TrackController) GetAllTracks(ctx *gin.Context) {
 	tracks, err := c.trackService.GetAllTracks()
 	if err != nil {
@@ -82,12 +83,13 @@ func (c *TrackController) GetAllTracks(ctx *gin.Context) {
 // @Description Возвращает информацию о конкретном треке
 // @Tags Tracks
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "ID трека"
 // @Success 200 {object} model.TrackResponse
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /tracks/{id} [get]
+// @Router /api/tracks/{id} [get]
 func (c *TrackController) GetTrackByID(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
@@ -109,12 +111,13 @@ func (c *TrackController) GetTrackByID(ctx *gin.Context) {
 // @Description Возвращает аудиопоток для проигрывания трека
 // @Tags Tracks
 // @Produce audio/mpeg
+// @Security BearerAuth
 // @Param id path int true "ID трека"
 // @Success 200 {file} binary
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /tracks/stream/{id} [get]
+// @Router /api/tracks/stream/{id} [get]
 func (c *TrackController) StreamTrack(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
@@ -137,15 +140,15 @@ func (c *TrackController) StreamTrack(ctx *gin.Context) {
 // @Description Удаляет трек по ID (только для владельца)
 // @Tags Tracks
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "ID трека"
-// @Security ApiKeyAuth
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Failure 401 {object} response.Response
 // @Failure 403 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /tracks/{id} [delete]
+// @Router /api/tracks/{id} [delete]
 func (c *TrackController) DeleteTrack(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
@@ -166,6 +169,7 @@ func (c *TrackController) DeleteTrack(ctx *gin.Context) {
 // @Description Поиск треков по названию, исполнителю, альбому или жанру
 // @Tags Tracks
 // @Produce json
+// @Security BearerAuth
 // @Param q query string false "Поисковый запрос"
 // @Param artist query string false "Исполнитель"
 // @Param album query string false "Альбом"
@@ -173,7 +177,7 @@ func (c *TrackController) DeleteTrack(ctx *gin.Context) {
 // @Success 200 {array} model.TrackResponse
 // @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /tracks/search [get]
+// @Router /api/tracks/search [get]
 func (c *TrackController) SearchTracks(ctx *gin.Context) {
 	var params model.TrackSearchParams
 	if err := ctx.ShouldBindQuery(&params); err != nil {

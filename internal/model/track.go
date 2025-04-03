@@ -1,6 +1,9 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"mime/multipart"
+)
 
 type Track struct {
 	gorm.Model
@@ -9,15 +12,17 @@ type Track struct {
 	Album      string
 	Genre      string
 	Duration   int    // in seconds
+	ImagePath  string // path in MinIO
 	FilePath   string `gorm:"not null"` // path in MinIO
 	UploadedBy uint   `gorm:"not null"` // user ID
 }
 
 type TrackUploadRequest struct {
-	Title  string `form:"title" binding:"required"`
-	Artist string `form:"artist" binding:"required"`
-	Album  string `form:"album"`
-	Genre  string `form:"genre"`
+	Title  string                `form:"title" binding:"required"`
+	Artist string                `form:"artist" binding:"required"`
+	Album  string                `form:"album"`
+	Genre  string                `form:"genre"`
+	Image  *multipart.FileHeader `form:"image"`
 }
 
 type TrackResponse struct {
@@ -27,6 +32,7 @@ type TrackResponse struct {
 	Album     string `json:"album"`
 	Genre     string `json:"genre"`
 	Duration  int    `json:"duration"`
+	ImageURL  string `json:"image_url"`
 	CreatedAt string `json:"createdAt"`
 }
 

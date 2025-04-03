@@ -100,6 +100,7 @@ func main() {
 			track.GET("/stream/:id", trackController.StreamTrack)
 			track.DELETE("/:id", trackController.DeleteTrack)
 			track.GET("/search", trackController.SearchTracks)
+			track.GET("/:id/image", trackController.GetTrackImage)
 		}
 
 		playlist := api.Group("/playlists")

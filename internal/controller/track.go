@@ -26,6 +26,7 @@ func NewTrackController(trackService service.TrackService) *TrackController {
 // @Produce json
 // @Security BearerAuth
 // @Param file formData file true "Аудиофайл"
+// @Param image formData file false "Изображение"
 // @Param title formData string true "Название трека"
 // @Param artist formData string true "Исполнитель"
 // @Param album formData string false "Альбом"
@@ -38,11 +39,13 @@ func NewTrackController(trackService service.TrackService) *TrackController {
 func (c *TrackController) UploadTrack(ctx *gin.Context) {
 	userID := ctx.GetUint("userID")
 
-	file, err := ctx.FormFile("file")
+	audioFile, err := ctx.FormFile("file")
 	if err != nil {
 		response.Error(ctx, http.StatusBadRequest, "File is required")
 		return
 	}
+
+	imageFile, err := ctx.FormFile("image")
 
 	var req model.TrackUploadRequest
 	if err := ctx.ShouldBind(&req); err != nil {
@@ -50,7 +53,7 @@ func (c *TrackController) UploadTrack(ctx *gin.Context) {
 		return
 	}
 
-	track, err := c.trackService.UploadTrack(file, &req, userID)
+	track, err := c.trackService.UploadTrack(audioFile, imageFile, &req, userID)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "Failed to upload track")
 		return
@@ -192,4 +195,31 @@ func (c *TrackController) SearchTracks(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, http.StatusOK, tracks)
+}
+
+// GetTrackImage godoc
+// @Summary Получить изображение трека
+// @Tags Tracks
+// @Produce image/*
+// @Security BearerAuth
+// @Param id path int true "ID трека"
+// @Success 200 {file} byte
+// @Failure 400 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /api/tracks/{id}/image [get]
+func (c *TrackController) GetTrackImage(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid track ID")
+		return
+	}
+
+	reader, contentType, err := c.trackService.GetTrackImage(uint(id))
+	if err != nil {
+		response.Error(ctx, http.StatusNotFound, "Image not found")
+		return
+	}
+	defer reader.Close()
+
+	ctx.DataFromReader(http.StatusOK, -1, contentType, reader, nil)
 }

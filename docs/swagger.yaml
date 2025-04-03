@@ -69,6 +69,8 @@ definitions:
         type: string
       id:
         type: integer
+      image_url:
+        type: string
       title:
         type: string
     type: object
@@ -395,6 +397,10 @@ paths:
         name: file
         required: true
         type: file
+      - description: Изображение
+        in: formData
+        name: image
+        type: file
       - description: Название трека
         in: formData
         name: title
@@ -508,6 +514,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Получить трек по ID
+      tags:
+      - Tracks
+  /api/tracks/{id}/image:
+    get:
+      parameters:
+      - description: ID трека
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - image/*
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить изображение трека
       tags:
       - Tracks
   /api/tracks/search:

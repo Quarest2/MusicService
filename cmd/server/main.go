@@ -96,6 +96,7 @@ func main() {
 		{
 			track.POST("", trackController.UploadTrack)
 			track.GET("", trackController.GetAllTracks)
+			track.GET("/user/:userId", trackController.GetUserTracks)
 			track.GET("/:id", trackController.GetTrackByID)
 			track.GET("/stream/:id", trackController.StreamTrack)
 			track.DELETE("/:id", trackController.DeleteTrack)

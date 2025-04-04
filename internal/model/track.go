@@ -26,14 +26,15 @@ type TrackUploadRequest struct {
 }
 
 type TrackResponse struct {
-	ID        uint   `json:"id"`
-	Title     string `json:"title"`
-	Artist    string `json:"artist"`
-	Album     string `json:"album"`
-	Genre     string `json:"genre"`
-	Duration  int    `json:"duration"`
-	ImageURL  string `json:"image_url"`
-	CreatedAt string `json:"createdAt"`
+	ID         uint   `json:"id"`
+	Title      string `json:"title"`
+	Artist     string `json:"artist"`
+	Album      string `json:"album"`
+	Genre      string `json:"genre"`
+	Duration   int    `json:"duration"`
+	ImageURL   string `json:"image_url"`
+	CreatedAt  string `json:"createdAt"`
+	UploadedBy uint   `json:"uploadedBy"`
 }
 
 type TrackSearchParams struct {

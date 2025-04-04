@@ -73,6 +73,8 @@ definitions:
         type: string
       title:
         type: string
+      uploadedBy:
+        type: integer
     type: object
   model.UserResponse:
     properties:
@@ -617,6 +619,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Воспроизвести трек
+      tags:
+      - Tracks
+  /api/tracks/user/{userId}:
+    get:
+      description: Возвращает список всех треков пользователя в системе
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TrackResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить все треки пользователя
       tags:
       - Tracks
   /api/user/profile:

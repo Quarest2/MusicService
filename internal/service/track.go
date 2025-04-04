@@ -23,6 +23,7 @@ type TrackService interface {
 	DeleteTrack(id uint) error
 	SearchTracks(params model.TrackSearchParams) ([]model.TrackResponse, error)
 	GetTrackImage(id uint) (io.ReadCloser, string, error)
+	GetUserTracks(userId uint) ([]model.TrackResponse, error)
 }
 
 type trackService struct {
@@ -87,13 +88,14 @@ func (s *trackService) UploadTrack(audioFile *multipart.FileHeader, imageFile *m
 	}
 
 	return &model.TrackResponse{
-		ID:        track.ID,
-		Title:     track.Title,
-		Artist:    track.Artist,
-		Album:     track.Album,
-		Genre:     track.Genre,
-		Duration:  track.Duration,
-		CreatedAt: track.CreatedAt.Format(time.RFC3339),
+		ID:         track.ID,
+		Title:      track.Title,
+		Artist:     track.Artist,
+		Album:      track.Album,
+		Genre:      track.Genre,
+		Duration:   track.Duration,
+		CreatedAt:  track.CreatedAt.Format(time.RFC3339),
+		UploadedBy: track.UploadedBy,
 	}, nil
 }
 
@@ -109,14 +111,15 @@ func (s *trackService) GetTrackByID(id uint) (*model.TrackResponse, error) {
 	}
 
 	return &model.TrackResponse{
-		ID:        track.ID,
-		Title:     track.Title,
-		Artist:    track.Artist,
-		Album:     track.Album,
-		Genre:     track.Genre,
-		Duration:  track.Duration,
-		ImageURL:  imageURL,
-		CreatedAt: track.CreatedAt.Format(time.RFC3339),
+		ID:         track.ID,
+		Title:      track.Title,
+		Artist:     track.Artist,
+		Album:      track.Album,
+		Genre:      track.Genre,
+		Duration:   track.Duration,
+		ImageURL:   imageURL,
+		CreatedAt:  track.CreatedAt.Format(time.RFC3339),
+		UploadedBy: track.UploadedBy,
 	}, nil
 }
 
@@ -135,14 +138,15 @@ func (s *trackService) GetAllTracks() ([]model.TrackResponse, error) {
 		}
 
 		response = append(response, model.TrackResponse{
-			ID:        track.ID,
-			Title:     track.Title,
-			Artist:    track.Artist,
-			Album:     track.Album,
-			Genre:     track.Genre,
-			Duration:  track.Duration,
-			ImageURL:  imageURL,
-			CreatedAt: track.CreatedAt.Format(time.RFC3339),
+			ID:         track.ID,
+			Title:      track.Title,
+			Artist:     track.Artist,
+			Album:      track.Album,
+			Genre:      track.Genre,
+			Duration:   track.Duration,
+			ImageURL:   imageURL,
+			CreatedAt:  track.CreatedAt.Format(time.RFC3339),
+			UploadedBy: track.UploadedBy,
 		})
 	}
 
@@ -187,13 +191,14 @@ func (s *trackService) SearchTracks(params model.TrackSearchParams) ([]model.Tra
 	var response []model.TrackResponse
 	for _, track := range tracks {
 		response = append(response, model.TrackResponse{
-			ID:        track.ID,
-			Title:     track.Title,
-			Artist:    track.Artist,
-			Album:     track.Album,
-			Genre:     track.Genre,
-			Duration:  track.Duration,
-			CreatedAt: track.CreatedAt.Format(time.RFC3339),
+			ID:         track.ID,
+			Title:      track.Title,
+			Artist:     track.Artist,
+			Album:      track.Album,
+			Genre:      track.Genre,
+			Duration:   track.Duration,
+			CreatedAt:  track.CreatedAt.Format(time.RFC3339),
+			UploadedBy: track.UploadedBy,
 		})
 	}
 
@@ -244,4 +249,34 @@ func (s *trackService) GetTrackImage(trackID uint) (io.ReadCloser, string, error
 
 	log.Printf("Successfully retrieved image for track ID %d (%s)", trackID, track.ImagePath)
 	return obj, contentType, nil
+}
+
+func (s *trackService) GetUserTracks(userId uint) ([]model.TrackResponse, error) {
+	tracks, err := s.trackRepo.GetUserTracks(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var imageURL string
+
+	var response []model.TrackResponse
+	for _, track := range tracks {
+		if track.ImagePath != "" {
+			imageURL = fmt.Sprintf("/api/tracks/%d/image", track.ID)
+		}
+
+		response = append(response, model.TrackResponse{
+			ID:         track.ID,
+			Title:      track.Title,
+			Artist:     track.Artist,
+			Album:      track.Album,
+			Genre:      track.Genre,
+			Duration:   track.Duration,
+			ImageURL:   imageURL,
+			CreatedAt:  track.CreatedAt.Format(time.RFC3339),
+			UploadedBy: track.UploadedBy,
+		})
+	}
+
+	return response, nil
 }

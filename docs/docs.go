@@ -666,6 +666,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/tracks/user/{userId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает список всех треков пользователя в системе",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tracks"
+                ],
+                "summary": "Получить все треки пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.TrackResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/tracks/{id}": {
             "get": {
                 "security": [
@@ -1132,6 +1175,9 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                },
+                "uploadedBy": {
+                    "type": "integer"
                 }
             }
         },

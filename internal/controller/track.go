@@ -223,3 +223,29 @@ func (c *TrackController) GetTrackImage(ctx *gin.Context) {
 
 	ctx.DataFromReader(http.StatusOK, -1, contentType, reader, nil)
 }
+
+// GetUserTracks возвращает все треки пользователя
+// @Summary Получить все треки пользователя
+// @Description Возвращает список всех треков пользователя в системе
+// @Tags Tracks
+// @Produce json
+// @Security BearerAuth
+// @Param userId path int true "ID пользователя"
+// @Success 200 {array} model.TrackResponse
+// @Failure 500 {object} response.Response
+// @Router /api/tracks/user/{userId} [get]
+func (c *TrackController) GetUserTracks(ctx *gin.Context) {
+	userId, err := strconv.ParseUint(ctx.Param("userId"), 10, 32)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	tracks, err := c.trackService.GetUserTracks(uint(userId))
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, "Failed to get tracks")
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, tracks)
+}

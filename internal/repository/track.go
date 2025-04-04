@@ -2,7 +2,6 @@ package repository
 
 import (
 	"MusicService/internal/model"
-
 	"gorm.io/gorm"
 )
 
@@ -10,6 +9,7 @@ type TrackRepository interface {
 	Create(track *model.Track) error
 	GetByID(id uint) (*model.Track, error)
 	GetAll() ([]model.Track, error)
+	GetUserTracks(userId uint) ([]model.Track, error)
 	Delete(id uint) error
 	Search(params model.TrackSearchParams) ([]model.Track, error)
 	GetByPlaylistID(playlistID uint) ([]model.Track, error)
@@ -36,6 +36,16 @@ func (r *trackRepository) GetByID(id uint) (*model.Track, error) {
 func (r *trackRepository) GetAll() ([]model.Track, error) {
 	var tracks []model.Track
 	err := r.db.Find(&tracks).Error
+	return tracks, err
+}
+
+func (r *trackRepository) GetUserTracks(uploadedBy uint) ([]model.Track, error) {
+	var tracks []model.Track
+	query := r.db.Model(&model.Track{})
+
+	query = query.Where("uploaded_by = ?", uploadedBy)
+
+	err := query.Find(&tracks).Error
 	return tracks, err
 }
 

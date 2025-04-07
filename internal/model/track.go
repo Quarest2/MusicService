@@ -11,10 +11,11 @@ type Track struct {
 	Artist     string `gorm:"not null"`
 	Album      string
 	Genre      string
-	Duration   int    // in seconds
-	ImagePath  string // path in MinIO
-	FilePath   string `gorm:"not null"` // path in MinIO
-	UploadedBy uint   `gorm:"not null"` // user ID
+	Duration   int                // in seconds
+	ImagePath  string             // path in MinIO
+	FilePath   string             `gorm:"not null"` // path in MinIO
+	UploadedBy uint               `gorm:"not null"` // user ID
+	Listens    []ListeningHistory `json:"-" gorm:"foreignKey:TrackID"`
 }
 
 type TrackUploadRequest struct {

@@ -61,7 +61,7 @@ func (r *trackRepository) Search(params model.TrackSearchParams) ([]model.Track,
 		query = query.Where("title LIKE ? OR artist LIKE ?", "%"+params.Query+"%", "%"+params.Query+"%")
 	}
 	if params.Artist != "" {
-		query = query.Where("artist = ?", params.Artist)
+		query = query.Where("artist LIKE ?", "%"+params.Artist+"%")
 	}
 	if params.Album != "" {
 		query = query.Where("album = ?", params.Album)

@@ -61,16 +61,19 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	trackRepo := repository.NewTrackRepository(db)
 	playlistRepo := repository.NewPlaylistRepository(db)
+	statsRepo := repository.NewStatsRepository(db)
 
 	authService := service.NewAuthService(userRepo, jwtService)
 	userService := service.NewUserService(userRepo)
 	trackService := service.NewTrackService(trackRepo, minioClient, cfg.MinIO.BucketName)
 	playlistService := service.NewPlaylistService(playlistRepo, trackRepo)
+	statsService := service.NewStatsService(statsRepo)
 
 	authController := controller.NewAuthController(authService)
 	userController := controller.NewUserController(userService)
-	trackController := controller.NewTrackController(trackService)
+	trackController := controller.NewTrackController(trackService, statsService)
 	playlistController := controller.NewPlaylistController(playlistService)
+	statsController := controller.NewStatsController(statsService)
 
 	router := gin.Default()
 	router.Use(response.CORSMiddleware())
@@ -113,6 +116,14 @@ func main() {
 			playlist.DELETE("/:id", playlistController.DeletePlaylist)
 			playlist.POST("/:id/tracks", playlistController.AddTrackToPlaylist)
 			playlist.DELETE("/:id/tracks/:trackId", playlistController.RemoveTrackFromPlaylist)
+		}
+
+		statsGroup := api.Group("/stats")
+		{
+			statsGroup.GET("/track-plays", statsController.GetTrackPlaysCount)
+			statsGroup.GET("/artist-plays", statsController.GetArtistPlaysCount)
+			statsGroup.GET("/recent-tracks", statsController.GetRecentTracks)
+			statsGroup.GET("/recent-artists", statsController.GetRecentArtists)
 		}
 	}
 

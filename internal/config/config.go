@@ -68,6 +68,7 @@ func InitDB(cfg *Config) (*gorm.DB, error) {
 		&model.User{},
 		&model.Track{},
 		&model.Playlist{},
+		&model.ListeningHistory{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to auto migrate models: %w", err)

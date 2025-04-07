@@ -12,10 +12,11 @@ import (
 
 type TrackController struct {
 	trackService service.TrackService
+	statsService service.StatsService
 }
 
-func NewTrackController(trackService service.TrackService) *TrackController {
-	return &TrackController{trackService: trackService}
+func NewTrackController(trackService service.TrackService, statsService service.StatsService) *TrackController {
+	return &TrackController{trackService: trackService, statsService: statsService}
 }
 
 // UploadTrack загружает новый трек
@@ -122,6 +123,8 @@ func (c *TrackController) GetTrackByID(ctx *gin.Context) {
 // @Failure 500 {object} response.Response
 // @Router /api/tracks/stream/{id} [get]
 func (c *TrackController) StreamTrack(ctx *gin.Context) {
+	userID := ctx.MustGet("userID").(uint)
+
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		response.Error(ctx, http.StatusBadRequest, "Invalid track ID")
@@ -134,6 +137,10 @@ func (c *TrackController) StreamTrack(ctx *gin.Context) {
 		return
 	}
 	defer reader.Close()
+
+	if err = c.statsService.RecordTrackPlay(userID, uint(id)); err != nil {
+		response.Error(ctx, http.StatusInternalServerError, "Failed to record play of the track")
+	}
 
 	ctx.DataFromReader(http.StatusOK, -1, contentType, reader, nil)
 }

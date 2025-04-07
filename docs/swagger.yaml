@@ -7,6 +7,13 @@ definitions:
     required:
     - trackId
     type: object
+  model.ArtistPlayStats:
+    properties:
+      artist:
+        type: string
+      play_count:
+        type: integer
+    type: object
   model.LoginRequest:
     properties:
       email:
@@ -54,6 +61,17 @@ definitions:
     - email
     - password
     - username
+    type: object
+  model.TrackPlayStats:
+    properties:
+      artist:
+        type: string
+      id:
+        type: integer
+      play_count:
+        type: integer
+      title:
+        type: string
     type: object
   model.TrackResponse:
     properties:
@@ -368,6 +386,109 @@ paths:
       summary: Удалить трек из плейлиста
       tags:
       - Playlists
+  /api/stats/artist-plays:
+    get:
+      consumes:
+      - application/json
+      description: Получить кол-во прослушиваний у исполнителей для авторизированного
+        пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ArtistPlayStats'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить кол-во прослушиваний у исполнителей
+      tags:
+      - Stats
+  /api/stats/recent-artists:
+    get:
+      consumes:
+      - application/json
+      description: Получить последних (5) прослушанных исполнителей
+      parameters:
+      - description: Number of artists to return (default 5)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить последних прослушанных исполнителей
+      tags:
+      - Stats
+  /api/stats/recent-tracks:
+    get:
+      consumes:
+      - application/json
+      description: Получить последние (50) прослушанные треки
+      parameters:
+      - description: Number of tracks to return (default 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TrackResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить последние прослушанные треки
+      tags:
+      - Stats
+  /api/stats/track-plays:
+    get:
+      consumes:
+      - application/json
+      description: Получить кол-во прослушиваний у треков для авторизированного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TrackPlayStats'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Получить кол-во прослушиваний у треков
+      tags:
+      - Stats
   /api/tracks:
     get:
       description: Возвращает список всех треков в системе

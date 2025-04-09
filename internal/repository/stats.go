@@ -65,7 +65,7 @@ func (r *statsRepository) GetRecentArtists(userID uint, limit int) ([]string, er
 	var artists []string
 
 	err := r.db.Model(&model.ListeningHistory{}).
-		Select("distinct tracks.artist").
+		Select("tracks.artist").
 		Joins("join tracks on tracks.id = listening_histories.track_id").
 		Where("listening_histories.user_id = ?", userID).
 		Group("tracks.artist").
